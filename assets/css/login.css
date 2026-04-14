@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════
+   Zabbix Report — Login CSS
+   Ubicacion: assets/css/login.css
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --red:      #e03c3c;
+  --red-h:    #c42e2e;
+  --red-a12:  rgba(224,60,60,.12);
+  --red-a25:  rgba(224,60,60,.25);
+  --font:     'Inter', system-ui, sans-serif;
+  --mono:     'Courier New', monospace;
+  --ease:     cubic-bezier(.4,0,.2,1);
+}
+
+body.light-theme {
+  --bg:       #e8ecf4;
+  --bg2:      #dde2ed;
+  --card:     #ffffff;
+  --card2:    #f2f4f9;
+  --border:   #dde2ef;
+  --input:    #ffffff;
+  --text:     #0d1117;
+  --text2:    #4a5468;
+  --text3:    #8892a8;
+  --shadow:   0 8px 32px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.06);
+}
+body.dark-theme {
+  --bg:       #0f1117;
+  --bg2:      #0a0d14;
+  --card:     #181c28;
+  --card2:    #141828;
+  --border:   #252d42;
+  --input:    #141828;
+  --text:     #e8ecf6;
+  --text2:    #8892b0;
+  --text3:    #3e4a60;
+  --shadow:   0 8px 48px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 14px; line-height: 1.55;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  transition: background .22s var(--ease), color .22s var(--ease);
+}
+
+/* ── BACKGROUND IMAGE ──────────────────────────────────────────
+   Para activar: descomentar las lineas siguientes
+   y colocar tu imagen en assets/background/
+   ─────────────────────────────────────────────────────────────*/
+body {
+  background-image: url('../background/bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+.wrap, .top-bar, .bg-deco { position: relative; z-index: 1; }
+
+/* Cuando uses imagen de fondo, el card puede necesitar mas opacidad */
+/* .login-card { background: rgba(24, 28, 40, 0.92); backdrop-filter: blur(12px); } */
+
+/* BG decorativo */
+.bg-deco {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(224,60,60,.12) 0%, transparent 70%);
+}
+
+/* LANG / THEME en top */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px;
+}
+.lang-switcher { display: flex; gap: 5px; }
+.lang-switcher a {
+  font-size: 11px; font-weight: 700; text-decoration: none;
+  color: var(--text3); padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--border); letter-spacing: .06em;
+  transition: all .14s var(--ease);
+}
+.lang-switcher a:hover,
+.lang-switcher a.active { border-color: var(--red); color: var(--red); background: var(--red-a12); }
+.theme-btn {
+  background: var(--card2); border: 1px solid var(--border);
+  color: var(--text2); padding: 5px 13px; border-radius: 7px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: var(--font); transition: all .14s var(--ease);
+}
+.theme-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* WRAP */
+.wrap {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+}
+
+/* CARD */
+.login-card {
+  width: 100%; max-width: 400px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px 36px 32px;
+  box-shadow: var(--shadow);
+  animation: cardIn .3s var(--ease);
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+/* LOGO */
+.logo-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-bottom: 28px;
+}
+.custom-logo  { max-height: 34px; width: auto; }
+.logo-divider { width: 1px; height: 28px; background: var(--border); }
+.zabbix-badge {
+  background: var(--red); color: #fff;
+  padding: 5px 12px; border-radius: 7px;
+  font-weight: 700; font-size: 13px; letter-spacing: .05em;
+}
+
+/* HEADING */
+.login-heading {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  text-align: center; margin-bottom: 4px; letter-spacing: -.3px;
+}
+.login-sub {
+  font-size: 12px; color: var(--text3); text-align: center;
+  margin-bottom: 28px; font-family: var(--mono);
+}
+
+/* ERROR */
+.login-error {
+  padding: 10px 13px; border-radius: 9px; margin-bottom: 18px;
+  background: rgba(224,60,60,.08); color: var(--red);
+  border: 1px solid var(--red-a25); font-size: 13px; line-height: 1.5;
+}
+
+/* FIELDS */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--text3); margin-bottom: 7px;
+}
+.field input {
+  width: 100%; padding: 10px 13px;
+  background: var(--input); border: 1.5px solid var(--border);
+  border-radius: 9px; color: var(--text);
+  font-family: var(--mono); font-size: 13px; outline: none;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.field input:focus {
+  border-color: var(--red); box-shadow: 0 0 0 3px var(--red-a12);
+}
+.field input::placeholder { color: var(--text3); font-style: italic; }
+
+/* SUBMIT */
+.btn-login {
+  width: 100%; padding: 11px; border: none; border-radius: 10px;
+  background: var(--red); color: #fff;
+  font-family: var(--font); font-weight: 700; font-size: 14px;
+  cursor: pointer; margin-top: 6px; letter-spacing: .01em;
+  transition: background .15s, transform .12s, box-shadow .15s;
+}
+.btn-login:hover {
+  background: var(--red-h); transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--red-a25);
+}
+.btn-login:active { transform: translateY(0); }
+
+/* FOOTER INFO */
+.login-server {
+  font-size: 11px; color: var(--text3); text-align: center;
+  margin-top: 16px; font-family: var(--mono);
+}
+.login-server span { color: var(--text2); }
+
+/* CREDIT */
+.credit {
+  font-size: 11px; color: var(--text3); text-align: center;
+  margin-top: 14px; font-family: var(--mono);
+  border-top: 1px solid var(--border); padding-top: 14px;
+}
