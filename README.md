@@ -4,8 +4,8 @@
   <a href="https://paypal.me/axel250r">
     <img alt="Donate" src="https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge">
   </a>
-  <a href="https://github.com/axel250r/zabbix-multiversion/stargazers">
-    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/axel250r/zabbix-multiversion?style=social&label=Star">
+  <a href="https://github.com/axel250r/zabbix-multiversion-V2/stargazers">
+    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/axel250r/zabbix-multiversion-V2?style=social&label=Star">
   </a>
   <a href="https://komarev.com/ghpvc/?username=axel250r">
     <img alt="Views" src="https://komarev.com/ghpvc/?username=axel250r&color=brightgreen&style=flat-square">
