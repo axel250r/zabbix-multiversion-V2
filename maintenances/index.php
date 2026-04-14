@@ -39,13 +39,15 @@ require_once __DIR__ . '/../lib/i18n.php';
 $user_type      = $_SESSION['zbx_user_type'] ?? 1;
 $zabbix_version = $_SESSION['zabbix_version'] ?? '6.0.0';
 
+// user_type: 1=User, 2=Admin, 3=Super Admin (normalizado desde role.type)
 if (version_compare($zabbix_version, '6.4', '<')) {
-    $can_create   = ($user_type == 1 || $user_type >= 2);
-    $is_super_admin = ($user_type == 1 || $user_type == 3);
+    $can_create     = ($user_type >= 2);
+    $is_super_admin = ($user_type >= 3);
 } else {
-    $can_create   = ($user_type >= 2);
-    $is_super_admin = ($user_type == 3);
+    $can_create     = ($user_type >= 2);
+    $is_super_admin = ($user_type >= 3);
 }
+
 
 $translations_js = [
     'modal_loading'       => t('modal_loading'),
