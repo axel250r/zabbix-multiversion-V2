@@ -41,11 +41,28 @@ class ZabbixApi64Adapter extends ZabbixApiAdapter
     
     public function getUserType(string $username): int
     {
+        // Zabbix 6.4 puede usar roles igual que 7.x
+        // Intentar con selectRole primero, fallback a type directo
         $user_info = $this->call('user.get', [
-            'output' => ['type'],
-            'filter' => ['username' => $username]
+            'output'     => ['type'],
+            'selectRole' => ['type'],
+            'filter'     => ['username' => $username]
         ]);
-        return (int)($user_info[0]['type'] ?? 1);
+        if (!empty($user_info[0])) {
+            $u = $user_info[0];
+            // role.type en Zabbix 6.4: 0=User, 1=Admin, 2=Super Admin
+            // Normalizar a escala clásica: 1=User, 2=Admin, 3=Super Admin
+            if (isset($u['role']['type'])) {
+                $rt = (int)$u['role']['type'];
+                // Si ya viene en escala 1-3 (algunos builds), no sumar
+                return $rt >= 1 ? $rt : $rt + 1;
+            }
+            // type directo (1=User, 2=Admin, 3=Super Admin)
+            if (isset($u['type']) && (int)$u['type'] > 0) {
+                return (int)$u['type'];
+            }
+        }
+        return 1;
     }
     
     public function createMaintenance(array $params, array $hostids): array
