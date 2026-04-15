@@ -638,9 +638,9 @@ thead th.th-check { width: 40px; }
 
       <button class="ld-btn ld-btn-primary" id="export-selected-btn" disabled>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-        Export PDF
+        <?= t('ld_export_pdf') ?>
       </button>
-      <button class="ld-btn ld-btn-ghost" id="refresh-btn" title="Refrescar">
+      <button class="ld-btn ld-btn-ghost" id="refresh-btn" title="<?= t('ld_refresh') ?>">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
       </button>
     </div>
@@ -660,7 +660,7 @@ thead th.th-check { width: 40px; }
         </colgroup>
         <thead>
           <tr>
-            <th class="th-check"><input type="checkbox" id="check-all" title="Seleccionar todo"></th>
+            <th class="th-check"><input type="checkbox" id="check-all" title="<?= t('ld_select_all') ?>"></th>
             <th data-sort="host" class="sorted-col"><?= t('ld_col_host') ?> <span class="sort-arrow" id="arrow-host"></span></th>
             <th data-sort="name"><?= t('ld_col_item') ?> <span class="sort-arrow" id="arrow-name">&#9650;</span></th>
             <th><?= t('ld_col_key') ?></th>
@@ -709,28 +709,28 @@ thead th.th-check { width: 40px; }
       <button class="preview-range-btn" onclick="setPreviewRange(1)">24h</button>
       <button class="preview-range-btn" onclick="setPreviewRange(7)">7d</button>
       <button class="preview-range-btn" onclick="setPreviewRange(30)">30d</button>
-      <button class="preview-range-btn" onclick="reloadChart()" style="background:var(--red-a10);color:var(--red);border-color:var(--red-a30)">&#8635; Aplicar</button>
+      <button class="preview-range-btn" onclick="reloadChart()" style="background:var(--red-a10);color:var(--red);border-color:var(--red-a30)">&#8635; <?= t('ld_apply') ?></button>
     </div>
 
     <!-- Selector de tipo de grafico -->
     <div class="chart-type-bar" style="display:none">
       <button class="chart-type-btn active" data-type="line">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 8 14 12 10 6 6 10 2 6"/></svg> Linea
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 8 14 12 10 6 6 10 2 6"/></svg> <?= t('chart_line') ?>
       </button>
       <button class="chart-type-btn" data-type="area">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20 L6 10 L10 14 L14 6 L18 10 L22 4 L22 20 Z"/></svg> Area
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20 L6 10 L10 14 L14 6 L18 10 L22 4 L22 20 Z"/></svg> <?= t('chart_area') ?>
       </button>
       <button class="chart-type-btn" data-type="bar">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="18" y="2" width="4" height="18"/></svg> Barras
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="10" width="4" height="10"/><rect x="10" y="6" width="4" height="14"/><rect x="18" y="2" width="4" height="18"/></svg> <?= t('chart_bar') ?>
       </button>
       <button class="chart-type-btn" data-type="spline">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18 C6 18 6 6 12 6 S18 12 22 8"/></svg> Spline
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18 C6 18 6 6 12 6 S18 12 22 8"/></svg> <?= t('chart_spline') ?>
       </button>
       <button class="chart-type-btn" data-type="step">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2 18 8 18 8 10 14 10 14 6 20 6"/></svg> Escalonado
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2 18 8 18 8 10 14 10 14 6 20 6"/></svg> <?= t('chart_step') ?>
       </button>
       <button class="chart-type-btn" data-type="scatter">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="18" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="14" r="2"/><circle cx="20" cy="6" r="2"/></svg> Puntos
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="18" r="2"/><circle cx="10" cy="10" r="2"/><circle cx="16" cy="14" r="2"/><circle cx="20" cy="6" r="2"/></svg> <?= t('chart_scatter') ?>
       </button>
     </div>
 
