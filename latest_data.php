@@ -490,6 +490,11 @@ thead th.th-check { width: 40px; }
 }
 
 /* Preview modal */
+/* ── Thumbnail ── */
+.zbx-thumb-wrap{width:120px;height:42px;position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:var(--card2);border:1px solid var(--divider);transition:border-color .15s}
+.zbx-thumb-wrap:hover{border-color:rgba(224,60,60,.5)}
+.zbx-thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.zbx-thumb-spinner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--card2)}
 .preview-overlay {
   display:none; position:fixed; inset:0; z-index:3000;
   background:rgba(0,0,0,.65); backdrop-filter:blur(8px);
@@ -506,9 +511,7 @@ thead th.th-check { width: 40px; }
 .preview-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; gap:12px; }
 .preview-title { font-size:15px; font-weight:700; color:var(--text); }
 .preview-host  { font-size:12px; color:var(--text2); margin-top:2px; font-family:var(--mono); }
-.chart-type-bar {
-  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;
-}
+.chart-type-bar { display:none !important; }
 .chart-type-btn {
   display:inline-flex; align-items:center; gap:5px;
   padding:6px 12px; border-radius:8px; cursor:pointer;
@@ -519,7 +522,7 @@ thead th.th-check { width: 40px; }
 .chart-type-btn:hover { border-color:var(--red); color:var(--red); }
 .chart-type-btn.active { background:var(--red); border-color:var(--red); color:#fff; }
 .chart-canvas-wrap {
-  position:relative; height:320px;
+  position:relative; height:480px;
   background:var(--card2); border-radius:10px; padding:12px;
   border:1px solid var(--divider);
 }
@@ -710,7 +713,7 @@ thead th.th-check { width: 40px; }
     </div>
 
     <!-- Selector de tipo de grafico -->
-    <div class="chart-type-bar">
+    <div class="chart-type-bar" style="display:none">
       <button class="chart-type-btn active" data-type="line">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 8 14 12 10 6 6 10 2 6"/></svg> Linea
       </button>
@@ -731,14 +734,16 @@ thead th.th-check { width: 40px; }
       </button>
     </div>
 
-    <!-- Canvas -->
+    <!-- Gráfico nativo Zabbix -->
     <div class="chart-canvas-wrap">
       <div class="preview-loading" id="preview-loading"><span class="ld-spinner"></span></div>
       <div class="preview-nodata" id="preview-nodata" style="display:none">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l18 18M9 9v6m6-6v6M3 9h18"/></svg>
         <?= t('ld_no_data_range') ?>
       </div>
-      <canvas id="preview-canvas"></canvas>
+      <img id="preview-zbx-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain"
+        onload="document.getElementById('preview-loading').style.display='none';this.style.display='block'"
+        onerror="document.getElementById('preview-loading').style.display='none';document.getElementById('preview-nodata').style.display='flex';this.style.display='none'">
     </div>
 
     <div class="preview-footer">
@@ -1198,237 +1203,78 @@ function escH(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;
 function escA(s) { return String(s??'').replace(/"/g,'&quot;'); }
 
 // ── PREVIEW DE GRAFICO ────────────────────────────────────────────────────────
-var _previewChart  = null;
-var _previewItem   = null; // {itemid, name, host, vtype}
-var _previewType   = 'line';
+var _previewItem  = null;
+var _previewChart = {_cachedData:[{t:0,v:0}]};
 
-var CHART_COLORS = {
-  line:   'rgb(224,60,60)',
-  fill:   'rgba(224,60,60,.15)',
-  grid:   'rgba(128,128,128,.15)',
-  text:   getComputedStyle(document.body).getPropertyValue('--text') || '#e8ecf6',
-};
-
+function parseDTL(val) {
+  if (!val) return null;
+  var m = val.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  return m ? new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]) : null;
+}
 function fmtDate(d) {
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+
          String(d.getDate()).padStart(2,'0')+'T'+
-         String(d.getHours()).padStart(2,'0')+':'+
-         String(d.getMinutes()).padStart(2,'0');
-}
-
-function setPreviewRange(days) {
-  var now  = new Date();
-  var from = new Date(now - days * 86400000);
-  document.getElementById('preview-from').value = fmtDate(from);
-  document.getElementById('preview-to').value   = fmtDate(now);
-  reloadChart();
+         String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 
 function openPreview(itemid, name, host, vtype, units) {
-  _previewItem = {itemid: itemid, name: name, host: host, vtype: vtype || 0, units: units || ''};
+  _previewItem = {itemid:itemid, name:name, host:host, vtype:vtype||0, units:units||''};
   document.getElementById('preview-item-name').textContent = name;
   document.getElementById('preview-item-host').textContent = host;
-
-  // Sincronizar con el rango global si hay uno seteado
   var gFrom = document.getElementById('range-from').value;
   var gTo   = document.getElementById('range-to').value;
   if (gFrom && gTo) {
     document.getElementById('preview-from').value = gFrom;
     document.getElementById('preview-to').value   = gTo;
   } else {
-    setPreviewRange(1); // default 24h sin reloadChart (lo hacemos despues)
-    // setPreviewRange ya llama reloadChart, salir
+    setPreviewRange(1);
     document.getElementById('preview-modal').classList.add('open');
     return;
   }
-
   document.getElementById('preview-modal').classList.add('open');
   reloadChart();
 }
 
 function closePreview() {
   document.getElementById('preview-modal').classList.remove('open');
-  if (_previewChart) { _previewChart.destroy(); _previewChart = null; }
+  var img = document.getElementById('preview-zbx-img');
+  if (img) { img.src=''; img.style.display='none'; }
 }
 
 document.getElementById('preview-modal').addEventListener('click', function(e) {
   if (e.target === this) closePreview();
 });
 
-// Botones de tipo de grafico
-document.querySelectorAll('.chart-type-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.chart-type-btn').forEach(function(b){ b.classList.remove('active'); });
-    this.classList.add('active');
-    _previewType = this.dataset.type;
-    if (_previewChart) renderChart(_previewChart._cachedData);
-  });
-});
+function setPreviewRange(days) {
+  var now=new Date(), from=new Date(now - days*86400000);
+  document.getElementById('preview-from').value = fmtDate(from);
+  document.getElementById('preview-to').value   = fmtDate(now);
+  reloadChart();
+}
 
 function reloadChart() {
   if (!_previewItem) return;
-  var fromEl = document.getElementById('preview-from');
-  var toEl   = document.getElementById('preview-to');
-  var from   = fromEl.value ? Math.floor(new Date(fromEl.value).getTime()/1000) : Math.floor(Date.now()/1000) - 86400;
-  var till   = toEl.value   ? Math.floor(new Date(toEl.value).getTime()/1000)   : Math.floor(Date.now()/1000);
+  var fromVal = document.getElementById('preview-from').value;
+  var toVal   = document.getElementById('preview-to').value;
+  if (!fromVal || !toVal) return;
 
-  document.getElementById('preview-loading').style.display = 'flex';
-  document.getElementById('preview-nodata').style.display  = 'none';
-  var canvas = document.getElementById('preview-canvas');
-  canvas.style.display = 'none';
+  var loading = document.getElementById('preview-loading');
+  var nodata  = document.getElementById('preview-nodata');
+  var img     = document.getElementById('preview-zbx-img');
 
-  fetch('latest_data.php?action=item_history'
-    + '&itemid=' + _previewItem.itemid
-    + '&vtype='  + _previewItem.vtype
-    + '&from='   + from
-    + '&till='   + till)
-    .then(function(r){ return r.json(); })
-    .then(function(data) {
-      console.log('Preview data:', JSON.stringify(data).slice(0,300));
-      document.getElementById('preview-loading').style.display = 'none';
-      if (data.error) {
-        var nd = document.getElementById('preview-nodata');
-        nd.style.display = 'flex';
-        nd.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg><span style="font-size:12px;max-width:300px;text-align:center">' + data.error + '</span>';
-        return;
-      }
-      if (!data.points || !data.points.length) {
-        document.getElementById('preview-nodata').style.display = 'flex';
-        return;
-      }
-      canvas.style.display = 'block';
-      renderChart(data.points);
-    })
-    .catch(function(err) {
-      console.error('Preview fetch error:', err);
-      document.getElementById('preview-loading').style.display = 'none';
-      document.getElementById('preview-nodata').style.display  = 'flex';
-    });
-}
+  loading.style.display='flex'; nodata.style.display='none';
+  img.style.display='none'; img.src='';
 
-function fmtVal(v, units) {
-  if (v === null || v === undefined) return '—';
-  var u = (units || '').trim();
-  // Convertir bytes
-  if (u === 'B' || u === 'b') {
-    if (v >= 1073741824) return (v/1073741824).toFixed(2) + ' GB';
-    if (v >= 1048576)    return (v/1048576).toFixed(2) + ' MB';
-    if (v >= 1024)       return (v/1024).toFixed(2) + ' KB';
-    return v + ' B';
-  }
-  // Bps
-  if (u === 'bps' || u === 'Bps') {
-    if (v >= 1000000) return (v/1000000).toFixed(2) + ' M' + u;
-    if (v >= 1000)    return (v/1000).toFixed(2) + ' K' + u;
-    return v.toFixed(2) + ' ' + u;
-  }
-  // Porcentaje
-  if (u === '%') return v.toFixed(2) + '%';
-  // Generico
-  var s = v.toFixed(4).replace(/\.?0+$/, '');
-  return u ? s + ' ' + u : s;
-}
+  // Formato Zabbix: "YYYY-MM-DD HH:mm:ss"
+  var fromZbx = fromVal.replace('T',' ') + ':00';
+  var toZbx   = toVal.replace('T',' ')   + ':00';
 
-function renderChart(points) {
-  if (!points || !points.length) return;
-  var canvas = document.getElementById('preview-canvas');
-  if (_previewChart) { _previewChart.destroy(); _previewChart = null; }
-
-  // Preparar datos segun tipo
-  var isNumeric = points.length > 0 && typeof points[0].v === 'number';
-  var labels = points.map(function(p){ return new Date(p.t * 1000); });
-  var values = points.map(function(p){ return isNumeric ? p.v : null; });
-
-  var type    = _previewType;
-  var tension = 0;
-  var stepped = false;
-  var chartType = 'line';
-  var fill    = false;
-  var pointRadius = 0;
-  var pointHover  = 4;
-
-  if (type === 'line')    { tension = 0;    fill = false; pointRadius = 0; }
-  if (type === 'area')    { tension = 0;    fill = true;  pointRadius = 0; }
-  if (type === 'spline')  { tension = 0.4;  fill = false; pointRadius = 0; }
-  if (type === 'step')    { tension = 0;    fill = false; stepped = 'before'; pointRadius = 0; }
-  if (type === 'scatter') { chartType = 'scatter'; pointRadius = 4; pointHover = 6; }
-  if (type === 'bar')     { chartType = 'bar'; }
-
-  var isDark   = document.body.classList.contains('dark-theme');
-  var gridColor= isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)';
-  var textColor= isDark ? '#8892b0' : '#5c6878';
-  var lineColor= '#e03c3c';
-  var fillColor= 'rgba(224,60,60,.12)';
-
-  var dataset = {
-    data: chartType === 'scatter'
-      ? points.map(function(p,i){ return {x: labels[i], y: typeof p.v === 'number' ? p.v : null}; })
-      : values,
-    borderColor:           lineColor,
-    backgroundColor:       type === 'bar' ? 'rgba(224,60,60,.7)' : (fill ? fillColor : 'transparent'),
-    borderWidth:           type === 'bar' ? 0 : 2,
-    tension:               tension,
-    stepped:               stepped,
-    pointRadius:           pointRadius,
-    pointHoverRadius:      pointHover,
-    pointBackgroundColor:  lineColor,
-    fill:                  fill,
-  };
-
-  var config = {
-    type: chartType,
-    data: {
-      labels: chartType === 'scatter' ? undefined : labels,
-      datasets: [dataset]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 250 },
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: isDark ? '#1c2030' : '#fff',
-          borderColor:     isDark ? '#2a3050' : '#e2e6ef',
-          borderWidth:     1,
-          titleColor:      textColor,
-          bodyColor:       isDark ? '#e8ecf6' : '#0f1117',
-          callbacks: {
-            title: function(items) {
-              return new Date(items[0].parsed.x).toLocaleString();
-            },
-            label: function(item) {
-              return fmtVal(item.parsed.y, _previewItem ? _previewItem.units : '');
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          type: 'time',
-          time: { tooltipFormat: 'dd/MM HH:mm' },
-          grid:  { color: gridColor },
-          ticks: { color: textColor, maxTicksLimit: 8, maxRotation: 0 }
-        },
-        y: {
-          grid:  { color: gridColor },
-          ticks: {
-            color: textColor,
-            callback: function(v) { return fmtVal(v, _previewItem ? _previewItem.units : ''); }
-          }
-        }
-      }
-    }
-  };
-
-  // Para bar chart ajustar x como category
-  if (chartType === 'bar') {
-    config.options.scales.x.type = 'time';
-  }
-
-  _previewChart = new Chart(canvas, config);
-  _previewChart._cachedData = points;
+  img.src = 'graphs/zbx_chart_proxy.php'
+    + '?itemid=' + encodeURIComponent(_previewItem.itemid)
+    + '&from='   + encodeURIComponent(fromZbx)
+    + '&to='     + encodeURIComponent(toZbx)
+    + '&width=860&height=440'
+    + '&_t='     + Date.now();
 }
 
 function exportFromPreview() {
@@ -1440,8 +1286,9 @@ function exportFromPreview() {
 
   setTimeout(function() {
     try {
-      var canvas  = document.getElementById('preview-canvas');
-      var imgData = canvas.toDataURL('image/png', 1.0);
+      var zbxImg  = document.getElementById('preview-zbx-img');
+      if (!zbxImg || !zbxImg.src) throw new Error('No image loaded');
+      var imgData = zbxImg.src;
 
       // Tamano A4 landscape
       var pdf     = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -1477,9 +1324,9 @@ function exportFromPreview() {
         pdf.text(rangeStr, 8, 35);
       }
 
-      // Grafico - calcular proporciones manteniendo aspect ratio del canvas
-      var cW    = canvas.width;
-      var cH    = canvas.height;
+      var zbxImg2 = document.getElementById('preview-zbx-img');
+      var cW = zbxImg2 && zbxImg2.naturalWidth  > 0 ? zbxImg2.naturalWidth  : 860;
+      var cH = zbxImg2 && zbxImg2.naturalHeight > 0 ? zbxImg2.naturalHeight : 440;
       var ratio = cH / cW;
       var imgW  = pW - 16;
       var imgH  = imgW * ratio;
