@@ -138,38 +138,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'refresh') {
     $items = $api->call('item.get', $item_params);
     if (!is_array($items)) $items = [];
 
-    // Obtener ultimo valor de history para items sin lastvalue
-    // Se procesan en lotes de 50 para evitar timeouts en consultas masivas
-    $need_history = [];
-    foreach ($items as $iid => $item) {
-        if ($item['lastclock'] == 0) $need_history[] = $iid;
-    }
-    if ($need_history) {
-        $batch_size = 50;
-        $latest     = [];
-        $chunks     = array_chunk($need_history, $batch_size);
-        foreach ($chunks as $chunk) {
-            // Limit = 5 registros por item del lote (suficiente para obtener el ultimo de cada uno)
-            $hist = $api->call('history.get', [
-                'output'    => ['itemid','value','clock'],
-                'itemids'   => $chunk,
-                'sortfield' => 'clock',
-                'sortorder' => 'DESC',
-                'limit'     => count($chunk) * 5,
-            ]);
-            if (is_array($hist)) {
-                foreach ($hist as $h) {
-                    if (!isset($latest[$h['itemid']])) $latest[$h['itemid']] = $h;
-                }
-            }
-        }
-        foreach ($latest as $iid => $h) {
-            if (isset($items[$iid])) {
-                $items[$iid]['lastvalue'] = $h['value'];
-                $items[$iid]['lastclock'] = $h['clock'];
-            }
-        }
-    }
+    // Items con lastclock == 0 simplemente no tienen datos recientes — se muestran como '—'
+    // No se hace history.get adicional porque en instalaciones grandes causa timeout
 
     // Ordenar por host name si se pide
     if ($sort === 'host') {
@@ -994,11 +964,70 @@ document.getElementById('name-search').addEventListener('input', function() {
   applyLocalFilter(1);
 });
 
-function loadData(page) {
-  if (state.loading) return;
-  state.loading = true; state.page = page || state.page;
+// ── Cache de navegador (sessionStorage, TTL 2 min) ───────────────────────────
+const CACHE_TTL_MS  = 2 * 60 * 1000; // 2 minutos
+const CACHE_MAX_B   = 4 * 1024 * 1024; // 4 MB máximo por entrada
 
-  // Show spinner
+function cacheKey() {
+  const hids = state.hostids.map(h=>h.id).sort().join(',');
+  const gids = state.groupids.map(g=>g.id).sort().join(',');
+  return 'zbx_cache_h' + hids + '_g' + gids;
+}
+
+function cacheGet() {
+  try {
+    const raw = sessionStorage.getItem(cacheKey());
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (Date.now() - entry.ts > CACHE_TTL_MS) {
+      sessionStorage.removeItem(cacheKey());
+      return null;
+    }
+    return entry.data;
+  } catch(e) { return null; }
+}
+
+function cacheSet(data) {
+  try {
+    const payload = JSON.stringify({ ts: Date.now(), data });
+    // No guardar si supera el límite — evita QuotaExceededError
+    if (payload.length > CACHE_MAX_B) return;
+    sessionStorage.setItem(cacheKey(), payload);
+  } catch(e) {
+    // sessionStorage lleno — limpiar entradas antiguas y reintentar
+    try {
+      for (const k of Object.keys(sessionStorage)) {
+        if (k.startsWith('zbx_cache_')) sessionStorage.removeItem(k);
+      }
+      sessionStorage.setItem(cacheKey(), JSON.stringify({ ts: Date.now(), data }));
+    } catch(e2) { /* si sigue fallando, simplemente no se cachea */ }
+  }
+}
+
+function cacheClear() {
+  try {
+    for (const k of Object.keys(sessionStorage)) {
+      if (k.startsWith('zbx_cache_')) sessionStorage.removeItem(k);
+    }
+  } catch(e) {}
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+function loadData(page, forceRefresh) {
+  if (state.loading) return;
+
+  // Si hay datos en cache y no es un refresh forzado, usarlos directamente
+  if (!forceRefresh) {
+    const cached = cacheGet();
+    if (cached) {
+      _allLoadedItems = cached;
+      applyLocalFilter(1);
+      lastRefresh.textContent = (T.ld_updated||'Updated:') + ' ' + new Date().toLocaleTimeString() + ' ✓';
+      return;
+    }
+  }
+
+  state.loading = true; state.page = page || state.page;
   tbody.innerHTML = '<tr><td colspan="8" class="ld-empty"><span class="ld-spinner"></span> '+(T.ld_loading||'Loading...')+'</td></tr>';
 
   const params = new URLSearchParams({
@@ -1015,7 +1044,7 @@ function loadData(page) {
       state.loading = false;
       lastRefresh.textContent = (T.ld_updated||'Updated:') + ' ' + new Date().toLocaleTimeString();
       _allLoadedItems = data.items;
-      // No limpiar el campo - el usuario puede haber escrito antes del Apply
+      cacheSet(data.items); // guardar en cache
       applyLocalFilter(1);
     })
     .catch(() => {
@@ -1140,7 +1169,19 @@ document.querySelectorAll('thead th[data-sort]').forEach(th => {
     this.classList.add('sorted');
     const arrow = this.querySelector('.sort-arrow');
     if (arrow) arrow.textContent = state.sortorder === 'ASC' ? '▲' : '▼';
-    loadData(1);
+
+    // Si ya hay datos cargados, ordenar localmente sin ir al servidor
+    if (_allLoadedItems.length) {
+      _allLoadedItems.sort(function(a, b) {
+        const va = field === 'host' ? (a.host||'') : (a.name||'');
+        const vb = field === 'host' ? (b.host||'') : (b.name||'');
+        const cmp = va.localeCompare(vb, undefined, {sensitivity:'base'});
+        return state.sortorder === 'DESC' ? -cmp : cmp;
+      });
+      applyLocalFilter(_filterPage);
+    } else {
+      loadData(1);
+    }
   });
 });
 
@@ -1197,12 +1238,16 @@ document.getElementById('clear-filter-btn').addEventListener('click', () => {
   document.getElementById('host-search').value  = '';
   document.getElementById('group-search').value = '';
   document.getElementById('name-search').value  = '';
+  cacheClear();
   renderFilterTags();
   tbody.innerHTML = '<tr><td colspan="8" class="ld-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'+(T.ld_no_filter||'Apply a filter to see data')+'</td></tr>';
   totalCount.textContent = '—';
   pagination.innerHTML = '';
 });
-document.getElementById('refresh-btn').addEventListener('click', () => loadData(state.page));
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  cacheClear(); // invalidar cache para forzar recarga fresca
+  loadData(state.page, true);
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function escH(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
