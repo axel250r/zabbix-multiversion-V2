@@ -74,7 +74,7 @@ try {
         ZABBIX_API_URL,
         $_SESSION['zbx_user'],
         $_SESSION['zbx_pass'],
-        ['timeout' => 25, 'verify_ssl' => defined('VERIFY_SSL') ? VERIFY_SSL : false]
+        ['timeout' => 45, 'verify_ssl' => defined('VERIFY_SSL') ? VERIFY_SSL : false]
     );
 
     $action = $_POST['action'] ?? 'get_host_items';
@@ -91,30 +91,40 @@ try {
             exit;
         }
 
-        // Items regulares (flags=0)
-        $reg = $api->call('item.get', [
-            'output'    => ['itemid', 'name', 'key_'],
-            'hostids'   => $hostIds,
-            'filter'    => ['flags' => 0, 'status' => 0],
-            'sortfield' => 'name',
-            'sortorder' => 'ASC',
-        ]);
+        // Obtener items en lotes de 20 hosts — evita timeout en instalaciones grandes
+        $batch_size  = 20;
+        $host_chunks = array_chunk($hostIds, $batch_size);
+        $reg_all     = [];
+        $disc_all    = [];
 
-        // Items discovered LLD (flags=4) — nombres concretos con valores reales
-        $disc = $api->call('item.get', [
-            'output'    => ['itemid', 'name', 'key_'],
-            'hostids'   => $hostIds,
-            'filter'    => ['flags' => 4, 'status' => 0],
-            'sortfield' => 'name',
-            'sortorder' => 'ASC',
-        ]);
+        foreach ($host_chunks as $chunk) {
+            // Items regulares (flags=0)
+            $reg_batch = $api->call('item.get', [
+                'output'    => ['itemid', 'name', 'key_', 'flags'],
+                'hostids'   => $chunk,
+                'filter'    => ['flags' => 0, 'status' => 0],
+                'sortfield' => 'name',
+                'sortorder' => 'ASC',
+            ]);
+            if (is_array($reg_batch)) $reg_all = array_merge($reg_all, $reg_batch);
+
+            // Items discovered LLD (flags=4)
+            $disc_batch = $api->call('item.get', [
+                'output'    => ['itemid', 'name', 'key_', 'flags'],
+                'hostids'   => $chunk,
+                'filter'    => ['flags' => 4, 'status' => 0],
+                'sortfield' => 'name',
+                'sortorder' => 'ASC',
+            ]);
+            if (is_array($disc_batch)) $disc_all = array_merge($disc_all, $disc_batch);
+        }
 
         // Deduplicar por key_ — cada key única aparece una vez en la lista.
         // La fusión por display_name ocurre solo al generar el CSV.
         $seen_keys = [];
         $result    = [];
 
-        foreach (array_merge(is_array($reg)?$reg:[], is_array($disc)?$disc:[]) as $item) {
+        foreach (array_merge($reg_all, $disc_all) as $item) {
             $is_lld = isset($item['flags']) ? $item['flags'] == 4 : false;
             if (isset($seen_keys[$item['key_']])) continue;
             $seen_keys[$item['key_']] = true;

@@ -245,6 +245,16 @@ body::before { content:''; position:fixed; inset:0; z-index:0; background:rgba(0
     </div>
   </div>
 
+  <!-- WARNING: selección grande sin filtro de nombre -->
+  <div id="dp-large-warn" style="display:none;align-items:flex-start;gap:10px;padding:11px 16px;margin-bottom:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.35);border-radius:10px;font-size:13px;color:#ca8a04">
+    <svg style="flex-shrink:0;margin-top:1px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <strong>Large selection detected</strong> —
+      Loading many groups without a keyword filter may be slow. For best results, type a keyword in <strong>"Filter items..."</strong> before clicking Apply (e.g. "CPU", "memory", "ping").
+    </div>
+    <button onclick="document.getElementById('dp-large-warn').style.display='none'" style="margin-left:auto;flex-shrink:0;background:none;border:none;cursor:pointer;color:#ca8a04;font-size:16px;line-height:1;padding:0">&#x2715;</button>
+  </div>
+
   <!-- SPLIT PANELS -->
   <div class="split-panels">
 
@@ -617,7 +627,22 @@ document.querySelectorAll('.items-table thead th[data-sort]').forEach(function(t
   });
 });
 
-document.getElementById('apply-filter-btn').addEventListener('click',function(){state.name=document.getElementById('name-search').value.trim();loadData();});
+document.getElementById('apply-filter-btn').addEventListener('click',function(){
+  state.name=document.getElementById('name-search').value.trim();
+
+  // Warning si hay 3+ grupos o 50+ hosts sin filtro de nombre
+  var groupCount=state.groupids.length;
+  var hostCount=state.hostids.length;
+  var hasName=state.name.length>0;
+  var warnEl=document.getElementById('dp-large-warn');
+  if(!hasName&&(groupCount>=3||hostCount>=50)){
+    if(warnEl){warnEl.style.display='flex';setTimeout(function(){warnEl.style.display='none';},8000);}
+  } else {
+    if(warnEl)warnEl.style.display='none';
+  }
+
+  loadData();
+});
 document.getElementById('clear-filter-btn').addEventListener('click',function(){
   state.hostids=[];state.groupids=[];state.name='';
   ['host-search','group-search','name-search'].forEach(function(id){document.getElementById(id).value='';});
