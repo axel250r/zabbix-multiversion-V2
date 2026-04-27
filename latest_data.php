@@ -596,6 +596,16 @@ thead th.th-check { width: 40px; }
     </div>
   </div>
 
+  <!-- WARNING: selección grande sin filtro de nombre -->
+  <div id="ld-large-warn" style="display:none;align-items:flex-start;gap:10px;padding:11px 16px;margin-bottom:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.35);border-radius:10px;font-size:13px;color:#ca8a04">
+    <svg style="flex-shrink:0;margin-top:1px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div>
+      <strong><?= t('ld_warn_large_title', 'Large selection detected') ?></strong> —
+      <?= t('ld_warn_large_msg', 'Loading many groups without a keyword filter may be slow or time out. For best results, type a keyword in <strong>"Filter loaded items..."</strong> before clicking Apply (e.g. "CPU", "memory", "ping").') ?>
+    </div>
+    <button onclick="document.getElementById('ld-large-warn').style.display='none'" style="margin-left:auto;flex-shrink:0;background:none;border:none;cursor:pointer;color:#ca8a04;font-size:16px;line-height:1;padding:0">&#x2715;</button>
+  </div>
+
   <!-- MAIN TABLE CARD -->
   <div style="background:var(--card);border:1px solid var(--divider);border-radius:14px;overflow:hidden">
 
@@ -1230,6 +1240,23 @@ document.getElementById('export-form').addEventListener('submit', function() {
 // ── Apply / clear filter ──────────────────────────────────────────────────────
 document.getElementById('apply-filter-btn').addEventListener('click', () => {
   state.name = document.getElementById('name-search').value.trim();
+
+  // Warning si hay 3+ grupos o 50+ hosts sin filtro de nombre
+  const groupCount = state.groupids.length;
+  const hostCount  = state.hostids.length;
+  const hasName    = state.name.length > 0;
+  const warnEl     = document.getElementById('ld-large-warn');
+
+  if (!hasName && (groupCount >= 3 || hostCount >= 50)) {
+    if (warnEl) {
+      warnEl.style.display = 'flex';
+      // Auto-ocultar después de 8 segundos
+      setTimeout(() => { warnEl.style.display = 'none'; }, 8000);
+    }
+  } else {
+    if (warnEl) warnEl.style.display = 'none';
+  }
+
   loadData(1);
 });
 
