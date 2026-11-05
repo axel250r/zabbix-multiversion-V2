@@ -162,9 +162,35 @@ function fetch_chart_png($cookieJar, $url, &$ctOut = null) {
     return $bin;
 }
 
+function is_png($bin) {
+    return is_string($bin) && strlen($bin) > 100 && strncmp($bin, "\x89PNG", 4) === 0;
+}
+
+// Descarga un PNG del frontend. Si la sesion web expiro, Zabbix responde con
+// la pagina de login (HTML) en vez de la imagen: se re-loguea una sola vez
+// por request y se reintenta.
+function fetch_png_relogin($cookieJar, $url) {
+    global $WEB_USER, $WEB_PASS;
+    static $relogged = false;
+    $png = fetch_chart_png($cookieJar, $url);
+    if (is_png($png)) return $png;
+    if ($relogged) return null;
+    $relogged = true;
+    @unlink($cookieJar);
+    if (!web_login_cookiejar(ZABBIX_URL, $WEB_USER, $WEB_PASS, $cookieJar)) return null;
+    $png = fetch_chart_png($cookieJar, $url);
+    return is_png($png) ? $png : null;
+}
+
+function save_chart_entry($title, $png) {
+    $f = TMP_DIR . '/zbx_g_' . uniqid('', true) . '.png';
+    file_put_contents($f, $png);
+    return ['title' => $title, 'png' => $f];
+}
+
 function buildItemChartEntry($hostName, $itemid, $title, $from_text, $to_text, $cookieJar) {
     $base = rtrim(ZABBIX_URL, '/');
-    $q1 = [
+    $q = [
         'from'       => $from_text,
         'to'         => $to_text,
         'itemids'    => [$itemid],
@@ -174,32 +200,33 @@ function buildItemChartEntry($hostName, $itemid, $title, $from_text, $to_text, $
         'width'      => CHART_WIDTH,
         'height'     => CHART_HEIGHT,
     ];
-    $url1 = $base . '/chart.php?' . http_build_query($q1, '', '&', PHP_QUERY_RFC3986);
-    $ct = null; $png = fetch_chart_png($cookieJar, $url1, $ct);
-    if ($png && strlen($png) > 12000) {
-        $f = TMP_DIR . '/zbx_g_' . uniqid('', true) . '.png';
-        file_put_contents($f, $png);
-        return ['title' => $hostName . ' - ' . $title, 'png' => $f];
-    }
-    $dur = max(300, abs(strtotime($to_text) - strtotime($from_text)));
-    $q2 = [
-        'from'       => 'now-' . $dur . 's',
-        'to'         => 'now',
-        'itemids'    => [$itemid],
-        'type'       => 0,
-        'profileIdx' => 'web.item.graph.filter',
-        'profileIdx2'=> $itemid,
-        'width'      => CHART_WIDTH,
-        'height'     => CHART_HEIGHT,
+    $url = $base . '/chart.php?' . http_build_query($q, '', '&', PHP_QUERY_RFC3986);
+    $png = fetch_png_relogin($cookieJar, $url);
+    if ($png) return save_chart_entry($hostName . ' - ' . $title, $png);
+    ztrace("buildItemChartEntry: sin PNG valido para item=$itemid host=$hostName");
+    return null;
+}
+
+// Grafico predefinido del host: chart2.php (normal/stacked) o chart6.php
+// (pie/exploded) dibujan el grafico tal como esta configurado en Zabbix:
+// varias series, colores, eje Y fijo, lineas de trigger y leyenda.
+function buildGraphChartEntry($hostName, $graphid, $title, $graphtype, $show3d, $from_text, $to_text, $cookieJar) {
+    $base = rtrim(ZABBIX_URL, '/');
+    $pie  = in_array((int)$graphtype, [2, 3], true);
+    $q = [
+        'graphid'     => $graphid,
+        'from'        => $from_text,
+        'to'          => $to_text,
+        'width'       => CHART_WIDTH,
+        'height'      => CHART_HEIGHT,
+        'profileIdx'  => 'web.charts.filter',
+        'profileIdx2' => $graphid,
     ];
-    $url2 = $base . '/chart.php?' . http_build_query($q2, '', '&', PHP_QUERY_RFC3986);
-    $png2 = fetch_chart_png($cookieJar, $url2, $ct);
-    if ($png2 && strlen($png2) > 12000) {
-        $f = TMP_DIR . '/zbx_g_' . uniqid('', true) . '.png';
-        file_put_contents($f, $png2);
-        return ['title' => $hostName . ' - ' . $title, 'png' => $f];
-    }
-    ztrace("buildItemChartEntry: sin PNG válido para item=$itemid host=$hostName");
+    if ($pie) $q['graph3d'] = (int)$show3d === 1 ? 1 : 0;
+    $url = $base . ($pie ? '/chart6.php?' : '/chart2.php?') . http_build_query($q, '', '&', PHP_QUERY_RFC3986);
+    $png = fetch_png_relogin($cookieJar, $url);
+    if ($png) return save_chart_entry($hostName . ' - ' . $title, $png);
+    ztrace("buildGraphChartEntry: sin PNG valido para graph=$graphid host=$hostName");
     return null;
 }
 
@@ -214,6 +241,7 @@ $input_item_keys     = collect_values(['item_keys']);
 $input_item_ids      = collect_values(['itemids', 'items_id', 'item_ids', 'itemids[]']);
 $input_lld_proto_ids  = collect_values(['lld_proto_ids']);
 $input_host_item_ids  = collect_values(['host_item_ids']);
+$input_graph_ids      = collect_values(['graph_ids']);
 
 if (empty($input_host_ids) && !empty($input_host_names)) {
     $allNum = true;
@@ -224,7 +252,8 @@ if (empty($input_host_ids) && !empty($input_host_names)) {
 $has_hosts = !empty($input_host_ids) || !empty($input_host_names) || !empty($input_hg_ids);
 $has_items = !empty($input_item_keys) || !empty($input_item_ids) || !empty($input_lld_proto_ids);
 $has_host_items = !empty($input_host_item_ids);
-if (!$has_host_items && (!$has_hosts || !$has_items)) {
+$has_graphs = !empty($input_graph_ids);
+if (!$has_host_items && !$has_graphs && (!$has_hosts || !$has_items)) {
     http_response_code(400);
     echo "<h3>Error</h3><pre>" . t('generate_invalid_input') . "</pre>";
     exit;
@@ -292,7 +321,7 @@ if (!empty($input_hg_ids)) {
 
 $hostids = array_values(array_unique($hostids));
 
-if (empty($hostids) && empty($input_item_ids) && empty($input_host_item_ids)) {
+if (empty($hostids) && empty($input_item_ids) && empty($input_host_item_ids) && empty($input_graph_ids)) {
     http_response_code(400);
     echo "<h3>Error</h3><pre>" . t('generate_no_hosts_found') . "</pre>";
     exit;
@@ -322,7 +351,9 @@ if (!is_file($cookieJar) || filesize($cookieJar) < 10) {
 
 $entries = [];
 
-if (!empty($hostids)) {
+// Los graficos de items de templates solo aplican si se eligieron items;
+// si solo hay graficos predefinidos, los hosts del paso 1 no generan nada extra.
+if (!empty($hostids) && $has_items) {
 
     foreach ($hostids as $hid) {
         $hostName = isset($id2name[$hid]) ? $id2name[$hid] : ('hostid:' . $hid);
@@ -418,6 +449,31 @@ if (!empty($input_host_item_ids)) {
         }
         $e = buildItemChartEntry($hName, (string)$item['itemid'],
             (string)($item['name'] ?? $item['key_']), $from_text, $to_text, $cookieJar);
+        if ($e) $entries[] = $e;
+    }
+}
+
+// graph_ids: graficos predefinidos seleccionados via modal "Graficos del host".
+if (!empty($input_graph_ids)) {
+    $gids = [];
+    foreach ($input_graph_ids as $gid) if (ctype_digit($gid)) $gids[] = $gid;
+    $gids = array_values(array_unique($gids));
+    $graphs = $gids ? $api->call('graph.get', [
+        'output'      => ['graphid', 'name', 'graphtype', 'show_3d'],
+        'graphids'    => $gids,
+        'selectHosts' => ['hostid', 'host', 'name'],
+    ]) : [];
+    $byId = [];
+    if (is_array($graphs)) {
+        foreach ($graphs as $g) if (isset($g['graphid'])) $byId[(string)$g['graphid']] = $g;
+    }
+    foreach ($gids as $gid) {   // respeta el orden de seleccion
+        if (!isset($byId[$gid])) continue;
+        $g = $byId[$gid];
+        $h = (isset($g['hosts'][0]) && is_array($g['hosts'][0])) ? $g['hosts'][0] : [];
+        $hName = $h['name'] ?? ($h['host'] ?? ('graph:' . $gid));
+        $e = buildGraphChartEntry($hName, $gid, (string)$g['name'], (int)($g['graphtype'] ?? 0),
+            (int)($g['show_3d'] ?? 0), $from_text, $to_text, $cookieJar);
         if ($e) $entries[] = $e;
     }
 }
