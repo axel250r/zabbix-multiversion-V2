@@ -1106,7 +1106,8 @@ body.dark-theme .custom-logo {
 
             // Vista previa con el mismo render que usara el PDF (ultimas 24h)
             const prev = document.createElement('a');
-            prev.href = '#'; prev.textContent = T.host_graph_preview; prev.style.marginLeft = 'auto';
+            prev.href = '#'; prev.textContent = T.host_graph_preview;
+            prev.style.cssText = 'margin-left:auto;font-size:11px;color:var(--red);text-decoration:none;white-space:nowrap';
             prev.addEventListener('click', ev => {
                 ev.preventDefault();
                 let img = wrap.querySelector('img');
