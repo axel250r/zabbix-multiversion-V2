@@ -63,7 +63,7 @@ body.dark-theme .custom-logo {
 
 <header class="topbar">
   <a href="export.php" class="topbar-brand">
-    <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/sonda.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" />
+    <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/Zabbix_logo.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" />
     <span class="zabbix-logo">ZABBIX</span>
     <span class="topbar-name">Report</span>
   </a>
@@ -257,7 +257,7 @@ body.dark-theme .custom-logo {
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="select-hosts"><?= t('modal_select_button') ?></button>
-      <button type="button" class="btn" id="cancel-host-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+      <button type="button" class="btn btn-cancel" id="cancel-host-selection"><?= t('modal_cancel_button') ?></button>
     </div>
   </div>
 </div>
@@ -276,7 +276,7 @@ body.dark-theme .custom-logo {
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="select-hostgroups"><?= t('modal_select_button') ?></button>
-      <button type="button" class="btn" id="cancel-hostgroup-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+      <button type="button" class="btn btn-cancel" id="cancel-hostgroup-selection"><?= t('modal_cancel_button') ?></button>
     </div>
   </div>
 </div>
@@ -324,7 +324,7 @@ body.dark-theme .custom-logo {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="next-to-items"><?= t('modal_next_button') ?></button>
-        <button type="button" class="btn" id="cancel-template-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+        <button type="button" class="btn btn-cancel" id="cancel-template-selection"><?= t('modal_cancel_button') ?></button>
       </div>
     </div>
     <div id="modal-step-2" style="display:none;">
