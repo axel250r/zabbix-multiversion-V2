@@ -1,5 +1,8 @@
 # Sesiones web de Zabbix (cookie jars de curl) y archivos temporales
 cookies.txt
 cj
-tmp/
+tmp/*
+!tmp/.htaccess
+logs/*
+!logs/.htaccess
 *.pdf
