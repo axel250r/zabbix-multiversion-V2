@@ -24,8 +24,12 @@ require_once __DIR__ . '/lib/PdfBuilder.php';
 require_once __DIR__ . '/lib/ZabbixApiFactory.php';  // <-- CAMBIADO
 
 if (!defined('TMP_DIR'))            define('TMP_DIR', __DIR__ . '/tmp');
-if (!defined('CHART_WIDTH'))        define('CHART_WIDTH', 1600);
-if (!defined('CHART_HEIGHT'))       define('CHART_HEIGHT', 400);
+// Tamano del area del grafico que se pide a Zabbix. Con la pagina A4 horizontal
+// (~1023 px utiles) un ancho de 900 px queda casi a escala 1:1, igual que en el
+// frontend: antes se pedian 1600 px y se reducian a menos de la mitad, por lo que
+// las etiquetas del eje X quedaban diminutas y apretadas. Se puede cambiar en config.php.
+if (!defined('CHART_WIDTH'))        define('CHART_WIDTH', 900);
+if (!defined('CHART_HEIGHT'))       define('CHART_HEIGHT', 300);
 if (!defined('ZABBIX_TZ'))          define('ZABBIX_TZ', 'America/Santiago');
 if (!defined('GEN_DEBUG_TRACE'))    define('GEN_DEBUG_TRACE', false);
 

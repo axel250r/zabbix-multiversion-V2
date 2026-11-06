@@ -156,6 +156,14 @@ class PdfBuilder
         return $html;
     }
 
+    // Horizontal por defecto: los graficos de Zabbix son anchos y asi se ven a
+    // tamano real. Se puede forzar con define('PDF_ORIENTATION', 'portrait') en config.php.
+    private static function orientation(): string
+    {
+        $o = defined('PDF_ORIENTATION') ? strtolower((string)PDF_ORIENTATION) : 'landscape';
+        return $o === 'portrait' ? 'portrait' : 'landscape';
+    }
+
     private static function buildWithDompdf(string $html, string $outfile): void
     {
         $autoload = __DIR__ . '/../vendor/autoload.php';
@@ -169,7 +177,7 @@ class PdfBuilder
         $options->set('isPhpEnabled', true);
         $dompdf = new Dompdf\Dompdf($options);
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', self::orientation());
         $dompdf->render();
         file_put_contents($outfile, $dompdf->output());
     }
@@ -178,7 +186,7 @@ class PdfBuilder
     {
         $tmp = (defined('APP_TMP') ? APP_TMP : sys_get_temp_dir()).DIRECTORY_SEPARATOR.'html_'.uniqid().'.html';
         file_put_contents($tmp, $html);
-        $cmd = 'wkhtmltopdf --enable-local-file-access --quiet --margin-top 70 --margin-bottom 40 --header-html "about:blank" --footer-html "about:blank" '.escapeshellarg($tmp).' '.escapeshellarg($outfile).' 2>&1';
+        $cmd = 'wkhtmltopdf --enable-local-file-access --quiet --orientation '.(self::orientation() === 'landscape' ? 'Landscape' : 'Portrait').' --margin-top 70 --margin-bottom 40 --header-html "about:blank" --footer-html "about:blank" '.escapeshellarg($tmp).' '.escapeshellarg($outfile).' 2>&1';
         exec($cmd, $out, $rc);
         @unlink($tmp);
         if ($rc !== 0) {

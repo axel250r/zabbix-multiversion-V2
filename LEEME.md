@@ -10,6 +10,7 @@ Una herramienta web sencilla y potente para seleccionar ítems de Zabbix y expor
 
 * **Exportación a PDF:** Genera informes profesionales en PDF con los gráficos de los ítems seleccionados.
 * **Gráficos predefinidos del host:** Selecciona los gráficos ya configurados en Zabbix y expórtalos tal como Zabbix los dibuja (varias series, colores, eje Y fijo, líneas de trigger y leyenda con last/min/avg/max).
+* **Gráficos legibles:** páginas A4 horizontales con los gráficos casi a escala 1:1, para que las etiquetas de los ejes se lean bien. Opcional en `config.php`: `define('PDF_ORIENTATION', 'portrait');` y `define('CHART_WIDTH', 900);` / `define('CHART_HEIGHT', 300);`
 * **Selección Múltiple:** Interfaz intuitiva para seleccionar hosts, grupos de hosts y plantillas.
 * **Paginación Inteligente:** Navega fácilmente a través de cientos de hosts, grupos y plantillas.
 * **Filtro Dinámico:** Encuentra rápidamente lo que buscas con filtros en tiempo real.

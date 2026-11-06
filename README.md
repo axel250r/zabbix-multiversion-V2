@@ -40,6 +40,7 @@ A PHP web application that installs alongside your existing Zabbix server and ad
 ### 📄 PDF Report Generator
 - 5-step wizard: select hosts → templates → items → time range → generate
 - **Predefined host graphs**: pick the graphs already configured on a host in Zabbix and export them exactly as Zabbix draws them (multiple series, colors, fixed Y-axis, trigger lines, legend with last/min/avg/max)
+- Landscape A4 pages with charts close to 1:1 scale, so axis labels stay readable. Optional settings in `config.php`: `define('PDF_ORIENTATION', 'portrait');` and `define('CHART_WIDTH', 900);` / `define('CHART_HEIGHT', 300);`
 - Inline graph preview with 6 chart types (line, area, bar, spline, step, scatter)
 - Full progress tracking during generation
 
