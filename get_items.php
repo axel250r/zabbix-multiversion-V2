@@ -153,6 +153,33 @@ try {
         exit;
     }
 
+    // ── get_host_graphs: graficos predefinidos del host (Data collection > Hosts > Graphs) ──
+    // Incluye graficos propios, heredados de templates y descubiertos por LLD.
+    if ($action === 'get_host_graphs') {
+        $hostid = trim((string)($input['hostid'] ?? ''));
+        if (!ctype_digit($hostid)) { echo json_encode([]); exit; }
+
+        $graphs = $api->call('graph.get', [
+            'output'    => ['graphid', 'name', 'graphtype', 'flags'],
+            'hostids'   => [$hostid],
+            'sortfield' => 'name',
+        ]);
+        $out = [];
+        if (is_array($graphs)) {
+            foreach ($graphs as $g) {
+                if (!isset($g['graphid'])) continue;
+                $out[] = [
+                    'graphid'       => (string)$g['graphid'],
+                    'name'          => (string)$g['name'],
+                    'graphtype'     => (int)($g['graphtype'] ?? 0),
+                    'is_discovered' => ((int)($g['flags'] ?? 0)) === 4,
+                ];
+            }
+        }
+        echo json_encode($out);
+        exit;
+    }
+
     // Accion desconocida
     echo json_encode([]);
 

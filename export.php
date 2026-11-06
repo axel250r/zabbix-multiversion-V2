@@ -92,7 +92,7 @@ body.dark-theme .custom-logo {
     <div class="step-connector" id="pc-3"></div>
     <div class="progress-step" id="ps-4"><div class="step-num">4</div><div class="step-text"><?= t('export_from_label','Tiempo') ?></div></div>
     <div class="step-connector" id="pc-4"></div>
-    <div class="progress-step" id="ps-5"><div class="step-num">5</div><div class="step-text">Export</div></div>
+    <div class="progress-step" id="ps-5"><div class="step-num">5</div><div class="step-text"><?= t('status_export_step') ?></div></div>
   </div>
 
   <form method="post" action="generate.php" target="_blank" id="form-export">
@@ -103,6 +103,7 @@ body.dark-theme .custom-logo {
     <input type="hidden" name="hostids"           id="hostids-hidden-input" />
     <input type="hidden" name="hostgroupids"      id="hostgroupids-hidden-input" />
     <input type="hidden" name="host_item_ids"     id="host-item-ids-hidden" />
+    <input type="hidden" name="graph_ids"         id="host-graph-ids-hidden" />
     <input type="hidden" name="client_tz"         id="client_tz">
     <input type="hidden" name="client_offset_min" id="client_offset_min">
 
@@ -127,7 +128,7 @@ body.dark-theme .custom-logo {
           <button type="button" class="btn-select" id="open-host-modal"><?= t('modal_select_button') ?></button>
         </div>
         <div style="margin-top:18px">
-          <div class="field-label"><?= t('export_groups_label') ?> <span class="label-optional">(opcional)</span></div>
+          <div class="field-label"><?= t('export_groups_label') ?> <span class="label-optional"><?= t('label_optional') ?></span></div>
           <div class="field-hint"><?= t('export_groups_placeholder') ?></div>
           <div class="field-row">
             <textarea name="hostgroups" id="hostgroups-textarea" rows="2" placeholder="<?= t('export_groups_placeholder') ?>"></textarea>
@@ -168,7 +169,7 @@ body.dark-theme .custom-logo {
           <div class="step-desc"><?= t('host_items_subtitle') ?></div>
         </div>
         <div class="step-status">
-          <span class="status-tag status-optional" id="st-hostitems"><?= t('label_optional','Optional') ?></span>
+          <span class="status-tag status-optional" id="st-hostitems"><?= t('status_optional') ?></span>
           <span class="step-chevron">&#9660;</span>
         </div>
       </div>
@@ -177,6 +178,29 @@ body.dark-theme .custom-logo {
         <div class="field-row" style="margin-top:10px">
           <textarea name="host_item_keys_txt" id="host-items-textarea" rows="2" placeholder="<?= t('host_items_placeholder') ?>"></textarea>
           <button type="button" class="btn-select" id="open-host-item-modal"><?= t('modal_select_button') ?></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3b: GRAFICOS PREDEFINIDOS DEL HOST -->
+    <div class="step-section" id="step-hostgraphs" data-step="3">
+      <div class="step-header" onclick="toggleStep('step-hostgraphs')">
+        <div class="step-badge"><svg class="badge-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="3 21 21 21"/></svg></div>
+        <div class="step-info">
+          <div class="step-title"><?= t('host_graphs_label') ?></div>
+          <div class="step-desc"><?= t('host_graphs_subtitle') ?></div>
+        </div>
+        <div class="step-status">
+          <span class="status-tag status-optional" id="st-hostgraphs"><?= t('status_optional') ?></span>
+          <span class="step-chevron">&#9660;</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="field-hint"><?= t('host_graphs_subtitle') ?></div>
+        <div class="field-row" style="margin-top:10px">
+          <textarea id="host-graphs-textarea" rows="2" readonly placeholder="<?= t('host_graphs_placeholder') ?>"></textarea>
+          <button type="button" class="btn-select" id="open-host-graph-modal"><?= t('modal_select_button') ?></button>
+          <button type="button" class="btn-select" id="clear-host-graphs"><?= t('host_graph_clear_btn') ?></button>
         </div>
       </div>
     </div>
@@ -190,7 +214,7 @@ body.dark-theme .custom-logo {
           <div class="step-desc"><?= t('export_time_range_note') ?></div>
         </div>
         <div class="step-status">
-          <span class="status-tag status-empty" id="st-time">Not set</span>
+          <span class="status-tag status-empty" id="st-time"><?= t('status_not_set') ?></span>
           <span class="step-chevron">&#9660;</span>
         </div>
       </div>
@@ -303,6 +327,38 @@ body.dark-theme .custom-logo {
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="hi-select-btn"><?= t('host_item_add_btn') ?></button>
         <button type="button" class="btn btn-cancel" id="hi-back-btn"><?= t('host_item_back_btn') ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: graficos predefinidos del host -->
+<div id="host-graph-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2><?= t('host_graph_modal_title') ?></h2>
+    <div id="hg-step-1">
+      <p style="font-size:13px;margin-bottom:8px"><?= t('host_graph_step1_desc') ?></p>
+      <input type="text" id="hg-host-filter" class="modal-filter" placeholder="<?= t('host_item_filter_hosts') ?>" />
+      <div id="hg-host-list" class="list-box"></div>
+      <div style="text-align:center"><div id="hg-host-pagination" class="pagination-controls"></div></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="hg-next-btn"><?= t('host_item_next_btn') ?> &rarr;</button>
+        <button type="button" class="btn btn-cancel" id="hg-cancel-btn"><?= t('modal_cancel_button') ?></button>
+      </div>
+    </div>
+    <div id="hg-step-2" style="display:none">
+      <p style="font-size:13px;margin-bottom:8px" id="hg-host-label"></p>
+      <input type="text" id="hg-graph-filter" class="modal-filter" placeholder="<?= t('host_graph_filter_graphs') ?>" />
+      <div class="bulk-ops-controls" style="margin-bottom: 10px;">
+        <button type="button" class="btn" id="hg-select-all"><?= t('modal_select_page_button') ?></button>
+        <button type="button" class="btn" id="hg-deselect-all"><?= t('modal_deselect_page_button') ?></button>
+      </div>
+      <div id="hg-graph-list" class="list-box"></div>
+      <div style="text-align:center"><div id="hg-graph-pagination" class="pagination-controls"></div></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="hg-select-btn"><?= t('host_graph_add_btn') ?></button>
+        <button type="button" class="btn btn-cancel" id="hg-back-btn"><?= t('host_item_back_btn') ?></button>
       </div>
     </div>
   </div>
@@ -811,6 +867,12 @@ body.dark-theme .custom-logo {
   document.getElementById('month-btn').addEventListener('click',  () => setRange(720));
   document.getElementById('6month-btn').addEventListener('click', () => setRange(4320));
 
+  // Escapa texto antes de insertarlo con innerHTML (nombres de Zabbix pueden traer < > & ")
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   // ==================== MODAL HOST-ITEMS ====================
   (() => {
     const modal      = document.getElementById('host-item-modal');
@@ -856,7 +918,7 @@ body.dark-theme .custom-logo {
         filtered.slice((hostPage2-1)*itemsPerPage, hostPage2*itemsPerPage).forEach(h => {
             const lbl = document.createElement('label'); lbl.className = 'chk';
             const chk = selHost && selHost.hostid === h.hostid ? 'checked' : '';
-            lbl.innerHTML = `<input type="radio" name="hi_host" value="${h.hostid}" data-name="${h.name.replace(/"/g,'&quot;')}" ${chk}> ${h.name}`;
+            lbl.innerHTML = `<input type="radio" name="hi_host" value="${escHtml(h.hostid)}" data-name="${escHtml(h.name)}" ${chk}> ${escHtml(h.name)}`;
             hostList.appendChild(lbl);
         });
         renderPagination(hostPag, hostPage2, filtered.length, p => { hostPage2 = p; renderHosts2(); });
@@ -907,7 +969,7 @@ body.dark-theme .custom-logo {
                 this.checked ? hostItemChecked.set(this.value, item.name) : hostItemChecked.delete(this.value);
             });
             lbl.appendChild(cb);
-            lbl.insertAdjacentHTML('beforeend', ` ${item.name}${badge} <small>${item.key_||''}</small>`);
+            lbl.insertAdjacentHTML('beforeend', ` ${escHtml(item.name)}${badge} <small>${escHtml(item.key_||'')}</small>`);
             itemList2.appendChild(lbl);
         });
         renderPagination(itemPag2, itemPage2, filtered.length, p => { itemPage2=p; renderItems2(); });
@@ -935,10 +997,161 @@ body.dark-theme .custom-logo {
         var ps  = document.getElementById('ps-3');
         var pc  = document.getElementById('pc-3');
         if (newVal && sec)  { sec.classList.add('is-filled'); }
-        if (newVal && st)   { st.textContent = 'Selected'; st.className = 'status-tag status-filled'; }
+        if (newVal && st)   { st.textContent = ST.selected; st.className = 'status-tag status-filled'; }
         if (newVal && ps)   { ps.className = 'progress-step done'; }
         if (newVal && pc)   { pc.style.background = 'var(--green)'; }
         if (typeof updateProgress === 'function') updateProgress();
+    };
+
+    // Si el usuario borra el texto a mano, se limpian tambien los ids ocultos
+    // (antes los items seguian enviandose aunque el campo se viera vacio).
+    document.getElementById('host-items-textarea').addEventListener('input', function() {
+        if (this.value.trim() === '') {
+            document.getElementById('host-item-ids-hidden').value = '';
+            hostItemChecked.clear();
+            updateProgress();
+        }
+    });
+  })();
+
+  // ==================== MODAL GRAFICOS PREDEFINIDOS DEL HOST ====================
+  (() => {
+    const modal     = document.getElementById('host-graph-modal');
+    const step1     = document.getElementById('hg-step-1');
+    const step2     = document.getElementById('hg-step-2');
+    const hostFilter= document.getElementById('hg-host-filter');
+    const hostList  = document.getElementById('hg-host-list');
+    const hostPag   = document.getElementById('hg-host-pagination');
+    const grFilter  = document.getElementById('hg-graph-filter');
+    const grList    = document.getElementById('hg-graph-list');
+    const grPag     = document.getElementById('hg-graph-pagination');
+    const hostLabel = document.getElementById('hg-host-label');
+    const idsInput  = document.getElementById('host-graph-ids-hidden');
+    const txtArea   = document.getElementById('host-graphs-textarea');
+
+    let allHosts = [], hostPage = 1, selHost = null;
+    let allGraphs = [], grPage = 1, filteredGraphs = [];
+    const checked = new Map();   // graphid -> nombre, para el host actual
+    const added   = new Map();   // graphid -> "Host: grafico", lo que ira al PDF
+
+    const close = () => modal.style.display = 'none';
+    modal.querySelector('.close').onclick = close;
+    document.getElementById('hg-cancel-btn').onclick = close;
+    window.addEventListener('click', e => { if (e.target === modal) close(); });
+
+    document.getElementById('open-host-graph-modal').onclick = () => {
+        modal.style.display = 'block';
+        step1.style.display = 'block'; step2.style.display = 'none';
+        if (!allHosts.length) {
+            hostList.innerHTML = `<p>${T.modal_loading}</p>`;
+            fetch('get_hosts.php').then(r => r.json()).then(data => {
+                allHosts = Array.isArray(data) ? data : [];
+                renderHosts();
+            });
+        } else { hostFilter.value = ''; hostPage = 1; renderHosts(); }
+    };
+
+    function renderHosts() {
+        const q = hostFilter.value.toLowerCase();
+        const filtered = allHosts.filter(h => h.name.toLowerCase().includes(q));
+        hostList.innerHTML = '';
+        if (!filtered.length) { hostList.innerHTML = `<p>${T.modal_no_results}</p>`; hostPag.innerHTML = ''; return; }
+        filtered.slice((hostPage-1)*itemsPerPage, hostPage*itemsPerPage).forEach(h => {
+            const lbl = document.createElement('label'); lbl.className = 'chk';
+            const chk = selHost && selHost.hostid === h.hostid ? 'checked' : '';
+            lbl.innerHTML = `<input type="radio" name="hg_host" value="${escHtml(h.hostid)}" data-name="${escHtml(h.name)}" ${chk}> ${escHtml(h.name)}`;
+            hostList.appendChild(lbl);
+        });
+        renderPagination(hostPag, hostPage, filtered.length, p => { hostPage = p; renderHosts(); });
+    }
+    hostFilter.onkeyup = () => { hostPage = 1; renderHosts(); };
+
+    document.getElementById('hg-next-btn').onclick = () => {
+        const radio = hostList.querySelector('input[type=radio]:checked');
+        if (!radio) { alert(T.host_items_select_host_first); return; }
+        selHost = { hostid: radio.value, name: radio.dataset.name };
+        checked.clear();
+        hostLabel.textContent = T.host_item_label_prefix + ': ' + selHost.name + ' (' + T.host_graph_label_suffix + ')';
+        step1.style.display = 'none'; step2.style.display = 'block';
+        grList.innerHTML = `<p>${T.modal_loading}</p>`; grPag.innerHTML = '';
+        fetch('get_items.php', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ action: 'get_host_graphs', hostid: selHost.hostid })
+        }).then(r => r.json()).then(data => {
+            allGraphs = Array.isArray(data) ? data : [];
+            allGraphs.forEach(g => { if (added.has(g.graphid)) checked.set(g.graphid, g.name); });
+            grPage = 1; grFilter.value = ''; renderGraphs();
+        }).catch(() => { grList.innerHTML = `<p style="color:red">${T.modal_no_results}</p>`; });
+    };
+    document.getElementById('hg-back-btn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; };
+    grFilter.onkeyup = () => { grPage = 1; renderGraphs(); };
+
+    function renderGraphs() {
+        const q = grFilter.value.toLowerCase();
+        filteredGraphs = allGraphs.filter(g => g.name.toLowerCase().includes(q));
+        grList.innerHTML = '';
+        if (!allGraphs.length) { grList.innerHTML = `<p>${T.host_graph_none}</p>`; grPag.innerHTML = ''; return; }
+        if (!filteredGraphs.length) { grList.innerHTML = `<p>${T.modal_no_results}</p>`; grPag.innerHTML = ''; return; }
+        filteredGraphs.slice((grPage-1)*itemsPerPage, grPage*itemsPerPage).forEach(g => {
+            const wrap = document.createElement('div');
+            const lbl = document.createElement('label'); lbl.className = 'chk';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox'; cb.value = g.graphid; cb.checked = checked.has(g.graphid);
+            cb.addEventListener('change', function() {
+                this.checked ? checked.set(g.graphid, g.name) : checked.delete(g.graphid);
+            });
+            lbl.appendChild(cb);
+            const badge = g.is_discovered ? ' <span class="badge">LLD</span>' : '';
+            lbl.insertAdjacentHTML('beforeend', ` ${escHtml(g.name)}${badge} `);
+
+            // Vista previa con el mismo render que usara el PDF (ultimas 24h)
+            const prev = document.createElement('a');
+            prev.href = '#'; prev.textContent = T.host_graph_preview;
+            prev.style.cssText = 'margin-left:auto;font-size:11px;color:var(--red);text-decoration:none;white-space:nowrap';
+            prev.addEventListener('click', ev => {
+                ev.preventDefault();
+                let img = wrap.querySelector('img');
+                if (img) { img.remove(); return; }
+                img = document.createElement('img');
+                img.style.cssText = 'max-width:100%;display:block;margin:4px 0 8px';
+                img.alt = g.name;
+                img.src = 'graphs/zbx_chart_proxy.php?graphid=' + encodeURIComponent(g.graphid)
+                        + '&graphtype=' + encodeURIComponent(g.graphtype)
+                        + '&from=now-86400s&to=now&width=700&height=160&_t=' + Date.now();
+                wrap.appendChild(img);
+            });
+            lbl.appendChild(prev);
+            wrap.appendChild(lbl);
+            grList.appendChild(wrap);
+        });
+        renderPagination(grPag, grPage, filteredGraphs.length, p => { grPage = p; renderGraphs(); });
+    }
+
+    const setPage = on => {
+        filteredGraphs.slice((grPage-1)*itemsPerPage, grPage*itemsPerPage)
+            .forEach(g => on ? checked.set(g.graphid, g.name) : checked.delete(g.graphid));
+        renderGraphs();
+    };
+    document.getElementById('hg-select-all').onclick   = () => setPage(true);
+    document.getElementById('hg-deselect-all').onclick = () => setPage(false);
+
+    function syncFields() {
+        idsInput.value = [...added.keys()].join(',');
+        txtArea.value  = [...added.values()].join(', ');
+        updateProgress();
+    }
+
+    document.getElementById('hg-select-btn').onclick = () => {
+        // Reemplaza la seleccion previa de ESTE host por la actual; los de otros hosts se mantienen
+        allGraphs.forEach(g => { if (!checked.has(g.graphid)) added.delete(g.graphid); });
+        if (!checked.size && ![...added.keys()].length) { alert(T.alert_select_graph); return; }
+        checked.forEach((name, id) => added.set(id, selHost.name + ': ' + name));
+        syncFields();
+        close();
+    };
+
+    document.getElementById('clear-host-graphs').onclick = () => {
+        added.clear(); checked.clear(); syncFields();
     };
   })();
 
@@ -946,7 +1159,8 @@ body.dark-theme .custom-logo {
   document.getElementById('form-export').addEventListener('submit', function(e) {
       const pdfBtn = document.getElementById('generate-pdf-btn');
 
-      const hasHostItems = document.getElementById('host-item-ids-hidden').value.trim();
+      const hasHostItems = document.getElementById('host-item-ids-hidden').value.trim() ||
+                           document.getElementById('host-graph-ids-hidden').value.trim();
       const hasHosts = document.getElementById('hostids-hidden-input').value.trim() ||
                        document.getElementById('hostnames-textarea').value.trim() ||
                        document.getElementById('hostgroupids-hidden-input').value.trim() ||
@@ -990,16 +1204,34 @@ body.dark-theme .custom-logo {
     return (el.value || el.getAttribute('value') || el.defaultValue || '').trim();
   }
 
+  // Textos de estado de cada paso, traducidos (antes estaban fijos en ingles)
+  var ST = {
+    selected:     T.status_selected     || 'Selected',
+    not_selected: T.status_not_selected || 'Not selected',
+    optional:     T.status_optional     || 'Optional',
+    defined:      T.status_defined      || 'Defined',
+    not_set:      T.status_not_set      || 'Not set'
+  };
+
   function updateProgress() {
-    var hasHosts     = v('hostids-hidden-input') || v('hostnames-textarea') || v('hostgroupids-hidden-input') || v('host-item-ids-hidden');
+    var hasGraphs    = v('host-graph-ids-hidden');
+    var hasHosts     = v('hostids-hidden-input') || v('hostnames-textarea') || v('hostgroupids-hidden-input') || v('host-item-ids-hidden') || hasGraphs;
     var hasHostItems = v('host-item-ids-hidden');
     var hasItems     = v('itemkeys-hidden-input') || v('lldids-hidden-input') || hasHostItems;
     var hasTime      = v('from_dt') && v('to_dt');
 
-    setStepState('ps-1','pc-1','st-hosts',    'step-hosts',    hasHosts,     'Selected','Not selected');
-    setStepState('ps-2','pc-2','st-items',    'step-items',    hasItems,     'Selected','Not selected');
-    setStepState('ps-3','pc-3','st-hostitems','step-hostitems',hasHostItems, 'Selected','Optional');
-    setStepState('ps-4','pc-4','st-time',     'step-time',     hasTime,      'Defined', 'Not set');
+    setStepState('ps-1','pc-1','st-hosts',    'step-hosts',    hasHosts,     ST.selected, ST.not_selected);
+    setStepState('ps-2','pc-2','st-items',    'step-items',    hasItems,     ST.selected, ST.not_selected);
+    setStepState('ps-3','pc-3','st-hostitems','step-hostitems',hasHostItems || hasGraphs, ST.selected, ST.optional);
+    // La seccion de graficos predefinidos comparte el paso 3 de la barra de progreso
+    var stG = document.getElementById('st-hostgraphs'), secG = document.getElementById('step-hostgraphs');
+    if (stG)  { stG.textContent = hasGraphs ? ST.selected : ST.optional; stG.className = 'status-tag ' + (hasGraphs ? 'status-filled' : 'status-empty'); }
+    if (secG) { secG.classList.toggle('is-filled', !!hasGraphs); }
+    var stHI = document.getElementById('st-hostitems');
+    if (stHI && !hasHostItems) { stHI.textContent = ST.optional; stHI.className = 'status-tag status-empty'; }
+    var secHI = document.getElementById('step-hostitems');
+    if (secHI) { secHI.classList.toggle('is-filled', !!hasHostItems); }
+    setStepState('ps-4','pc-4','st-time',     'step-time',     hasTime,      ST.defined, ST.not_set);
 
     var p5 = document.getElementById('ps-5');
     if (p5) p5.className = 'progress-step active';
@@ -1044,7 +1276,8 @@ body.dark-theme .custom-logo {
   var _prev = '';
   function pollHiddens() {
     var ids = ['hostids-hidden-input','hostgroupids-hidden-input',
-               'itemkeys-hidden-input','lldids-hidden-input','host-item-ids-hidden'];
+               'itemkeys-hidden-input','lldids-hidden-input','host-item-ids-hidden',
+               'host-graph-ids-hidden'];
     var cur = ids.map(function(id) {
       var el = document.getElementById(id);
       if (!el) return '';
@@ -1057,6 +1290,14 @@ body.dark-theme .custom-logo {
   pollHiddens();
 
   updateProgress();
+
+  // Acceso directo desde Latest Data (export.php#host-graphs): abre el selector de graficos
+  if (location.hash === '#host-graphs') {
+    var secHG = document.getElementById('step-hostgraphs');
+    secHG.classList.add('open');
+    secHG.scrollIntoView({ block: 'start' });
+    document.getElementById('open-host-graph-modal').click();
+  }
 
 </script>
 </body>
