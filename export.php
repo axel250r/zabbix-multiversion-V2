@@ -1282,6 +1282,14 @@ body.dark-theme .custom-logo {
 
   updateProgress();
 
+  // Acceso directo desde Latest Data (export.php#host-graphs): abre el selector de graficos
+  if (location.hash === '#host-graphs') {
+    var secHG = document.getElementById('step-hostgraphs');
+    secHG.classList.add('open');
+    secHG.scrollIntoView({ block: 'start' });
+    document.getElementById('open-host-graph-modal').click();
+  }
+
 </script>
 </body>
 </html>

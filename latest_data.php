@@ -551,6 +551,10 @@ thead th.th-check { width: 40px; }
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
     <?= t('maintenances_button', 'Mantenciones') ?>
   </a>
+  <a href="export.php#host-graphs" class="btn-top" style="background:#2563eb;color:#fff;border-color:#2563eb;text-decoration:none">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="3 21 21 21"/></svg>
+    <?= t('host_graphs_label') ?>
+  </a>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
     <button id="theme-toggle" class="btn-top">&#9788; Light</button>
