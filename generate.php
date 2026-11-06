@@ -428,11 +428,13 @@ if (empty($entries)) {
     exit;
 }
 
-$outfile = TMP_DIR . '/zabbix_report_' . date('Ymd_His') . '.pdf';
+// Nombre unico en disco: dos usuarios generando en el mismo segundo no se pisan el archivo
+$downloadName = 'zabbix_report_' . date('Ymd_His') . '.pdf';
+$outfile = TMP_DIR . '/' . bin2hex(random_bytes(8)) . '_' . $downloadName;
 try {
     PdfBuilder::build($entries, $outfile);
     header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="' . basename($outfile) . '"');
+    header('Content-Disposition: attachment; filename="' . $downloadName . '"');
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache'); header('Expires: 0');
     
