@@ -2,6 +2,13 @@
 
 Creado por **Axel Del Canto**.
 
+<p align="center">
+  <a href="https://github.com/axel250r/zabbix-multiversion-V2/stargazers"><img alt="Estrellas" src="https://img.shields.io/github/stars/axel250r/zabbix-multiversion-V2?style=for-the-badge&logo=github&label=Estrellas"></a>
+  <a href="https://paypal.me/axel250r"><img alt="Donar" src="https://img.shields.io/badge/Donar-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge"></a>
+</p>
+
+> **Guía paso a paso con capturas:** [Guía del informe PDF](https://github.com/axel250r/How-To/blob/main/pdf-report/HOWTO-ES.md). Si la herramienta te ahorra tiempo, una ⭐ en el repo ayuda a que otros administradores de Zabbix la encuentren.
+
 Una herramienta web sencilla y potente para seleccionar ítems de Zabbix y exportar sus gráficos históricos a un informe en formato PDF.
 
 ---

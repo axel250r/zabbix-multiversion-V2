@@ -1,18 +1,16 @@
-# Zabbix Report Tool — PDF, Excel, SLA & Maintenance Manager
+# Zabbix Report Tool: PDF, Excel, SLA & Maintenance Manager
 
 <p align="center">
-  <a href="https://paypal.me/axel250r">
-    <img alt="Donate" src="https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge">
-  </a>
-  <a href="https://github.com/axel250r/zabbix-multiversion-V2/stargazers">
-    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/axel250r/zabbix-multiversion-V2?style=social&label=Star">
-  </a>
-  <a href="https://komarev.com/ghpvc/?username=axel250r">
-    <img alt="Views" src="https://komarev.com/ghpvc/?username=axel250r&color=brightgreen&style=flat-square">
-  </a>
-  <a href="https://www.linkedin.com/in/axel-del-canto-del-canto-4ba643186/">
-    <img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Axel%20Del%20Canto-0A66C2?logo=linkedin&logoColor=white">
-  </a>
+  <a href="https://github.com/axel250r/zabbix-multiversion-V2/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/axel250r/zabbix-multiversion-V2?style=for-the-badge&logo=github&label=Stars"></a>
+  <a href="https://paypal.me/axel250r"><img alt="Donate" src="https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge"></a>
+</p>
+
+<p align="center">
+  <img alt="Zabbix" src="https://img.shields.io/badge/Zabbix-6.0%20%7C%206.4%20%7C%207.0%20%7C%207.4-D40000">
+  <img alt="PHP" src="https://img.shields.io/badge/PHP-%E2%89%A5%207.2-777BB4?logo=php&logoColor=white">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/axel250r/zabbix-multiversion-V2"></a>
+  <a href="https://github.com/axel250r/zabbix-multiversion-V2/issues"><img alt="Issues" src="https://img.shields.io/github/issues/axel250r/zabbix-multiversion-V2"></a>
+  <a href="https://www.linkedin.com/in/axel-del-canto-del-canto-4ba643186/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Axel%20Del%20Canto-0A66C2?logo=linkedin&logoColor=white"></a>
 </p>
 
 <p align="center">
@@ -22,8 +20,7 @@
 
 ---
 
-> **If this tool saves you time at work, a ⭐ star takes 2 seconds and helps others find it.**  
-> Hundreds of people use this tool every week. Only a handful have ever clicked star. Be one of them.
+> **If this tool saves you time at work, a ⭐ star takes two seconds and helps other Zabbix admins find it.**
 
 ---
 
@@ -93,9 +90,23 @@ A PHP web application that installs alongside your existing Zabbix server and ad
 
 ## 📚 Installation & Documentation
 
-Step-by-step guides (English & Spanish) in the dedicated how-to repository:
+Quick install on the Zabbix server (package installs use `/usr/share/zabbix`):
 
-👉 **[axel250r/How-To](https://github.com/axel250r/How-To)**
+```bash
+cd /usr/share/zabbix
+git clone https://github.com/axel250r/zabbix-multiversion-V2.git zabbix-report
+```
+
+Then edit `config.php` (`ZABBIX_URL`, `ZABBIX_TZ`, API user) and open `http://your-server/zabbix/zabbix-report/`.
+Run `check_requirements.php` if something does not work.
+
+Step-by-step guides with screenshots, in English and Spanish:
+
+| | |
+|---|---|
+| 🇬🇧 English | [PDF report how-to](https://github.com/axel250r/How-To/blob/main/pdf-report/HOWTO-EN.md) |
+| 🇪🇸 Español | [Guía del informe PDF](https://github.com/axel250r/How-To/blob/main/pdf-report/HOWTO-ES.md) |
+| Word manuals (Excel, SLA, maintenances) | [axel250r/How-To](https://github.com/axel250r/How-To) |
 
 ---
 
