@@ -537,12 +537,16 @@ thead th.th-check { width: 40px; }
 <!-- TOPBAR -->
 <header class="topbar">
   <a href="latest_data.php" class="topbar-brand">
-    <?php if (defined('CUSTOM_LOGO_PATH')): ?><img src="<?= htmlspecialchars(CUSTOM_LOGO_PATH,ENT_QUOTES,'UTF-8') ?>" alt="Logo" class="custom-logo" onerror="this.style.display='none'">><?php endif; ?>
+    <?php if (defined('CUSTOM_LOGO_PATH')): ?><img src="<?= htmlspecialchars(CUSTOM_LOGO_PATH,ENT_QUOTES,'UTF-8') ?>" alt="Logo" class="custom-logo" onerror="this.style.display='none'"><?php endif; ?>
     <span class="zabbix-logo">ZABBIX</span>
     <span class="topbar-name">Report</span>
   </a>
   <span class="topbar-sep">|</span>
   <span class="topbar-sub">Export</span>
+  <a href="export.php" class="btn-top" style="background:var(--red,#e53935);color:#fff;border-color:var(--red,#e53935);text-decoration:none">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    PDF
+  </a>
   <a href="export-excel/excel_export.php" class="btn-top" style="background:var(--green,#16a34a);color:#fff;border-color:var(--green,#16a34a);text-decoration:none" target="_blank" rel="noopener">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
     Excel
