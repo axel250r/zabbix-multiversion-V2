@@ -28,7 +28,7 @@ class PdfBuilder
             ];
         }
 
-        $logo_path_relative = defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/sonda.png';
+        $logo_path_relative = defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/Zabbix_logo.png';
         $logo_path_absolute = __DIR__ . '/../' . $logo_path_relative;
         $zabbix_logo_path = __DIR__ . '/../assets/Zabbix_logo.png';
 

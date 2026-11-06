@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST'){
   <div class="login-card">
 
     <div class="logo-row">
-      <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/sonda.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" onerror="this.style.display='none'">
+      <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/Zabbix_logo.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" onerror="this.style.display='none'">
       <div class="logo-divider"></div>
       <span class="zabbix-badge">ZABBIX</span>
     </div>

@@ -63,7 +63,7 @@ body.dark-theme .custom-logo {
 
 <header class="topbar">
   <a href="export.php" class="topbar-brand">
-    <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/sonda.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" />
+    <img src="<?= htmlspecialchars(defined('CUSTOM_LOGO_PATH') ? CUSTOM_LOGO_PATH : 'assets/Zabbix_logo.png', ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="custom-logo" />
     <span class="zabbix-logo">ZABBIX</span>
     <span class="topbar-name">Report</span>
   </a>

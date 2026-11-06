@@ -39,14 +39,17 @@ $baseDir = __DIR__;
 
 // Directorio para archivos temporales (debe tener permisos de escritura)
 if (!defined('TMP_DIR')) {
-    // Intenta usar un directorio dentro de la aplicación primero
-    $tmpDir = "{$baseDir}/tmp";
-    
-    // Si no se puede escribir, usa el directorio temporal del sistema
-    if (!is_writable($tmpDir) && !@mkdir($tmpDir, 0777, true)) {
-        $tmpDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'zbx_pdf';
+    // Primero el directorio temporal del sistema, fuera del directorio web: aqui se guardan
+    // las cookies de sesion de Zabbix y los PDF en curso, que no deben poder descargarse
+    // por URL. Si no se puede escribir alli, se usa {app}/tmp (protegido con .htaccess).
+    $tmpDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'zbx_pdf';
+    if (!is_dir($tmpDir)) {
+        @mkdir($tmpDir, 0700, true);
+    }
+    if (!is_writable($tmpDir)) {
+        $tmpDir = "{$baseDir}/tmp";
         if (!is_dir($tmpDir)) {
-            @mkdir($tmpDir, 0777, true);
+            @mkdir($tmpDir, 0770, true);
         }
     }
     
@@ -69,7 +72,7 @@ ini_set('log_errors', '1');
 ini_set('error_log', LOG_DIR . '/error.log');
 
 // Configuración de zona horaria (usar la misma que Zabbix)
-date_default_timezone_set('America/Santiago');
+date_default_timezone_set(ZABBIX_TZ);
 
 // Incluir el autoloader personalizado
 if (file_exists(__DIR__ . '/autoload.php')) {
