@@ -411,4 +411,11 @@ Se usaran las ultimas 24 horas.
     'month_oct' => 'Octubre',
     'month_nov' => 'Noviembre',
     'month_dec' => 'Diciembre',
+    // Estado de cada paso del asistente
+    'status_selected' => 'Seleccionado',
+    'status_not_selected' => 'Sin seleccionar',
+    'status_optional' => 'Opcional',
+    'status_defined' => 'Definido',
+    'status_not_set' => 'Sin definir',
+    'status_export_step' => 'Exportar',
 ];

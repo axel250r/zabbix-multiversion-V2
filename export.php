@@ -92,7 +92,7 @@ body.dark-theme .custom-logo {
     <div class="step-connector" id="pc-3"></div>
     <div class="progress-step" id="ps-4"><div class="step-num">4</div><div class="step-text"><?= t('export_from_label','Tiempo') ?></div></div>
     <div class="step-connector" id="pc-4"></div>
-    <div class="progress-step" id="ps-5"><div class="step-num">5</div><div class="step-text">Export</div></div>
+    <div class="progress-step" id="ps-5"><div class="step-num">5</div><div class="step-text"><?= t('status_export_step') ?></div></div>
   </div>
 
   <form method="post" action="generate.php" target="_blank" id="form-export">
@@ -128,7 +128,7 @@ body.dark-theme .custom-logo {
           <button type="button" class="btn-select" id="open-host-modal"><?= t('modal_select_button') ?></button>
         </div>
         <div style="margin-top:18px">
-          <div class="field-label"><?= t('export_groups_label') ?> <span class="label-optional">(opcional)</span></div>
+          <div class="field-label"><?= t('export_groups_label') ?> <span class="label-optional"><?= t('label_optional') ?></span></div>
           <div class="field-hint"><?= t('export_groups_placeholder') ?></div>
           <div class="field-row">
             <textarea name="hostgroups" id="hostgroups-textarea" rows="2" placeholder="<?= t('export_groups_placeholder') ?>"></textarea>
@@ -169,7 +169,7 @@ body.dark-theme .custom-logo {
           <div class="step-desc"><?= t('host_items_subtitle') ?></div>
         </div>
         <div class="step-status">
-          <span class="status-tag status-optional" id="st-hostitems"><?= t('label_optional','Optional') ?></span>
+          <span class="status-tag status-optional" id="st-hostitems"><?= t('status_optional') ?></span>
           <span class="step-chevron">&#9660;</span>
         </div>
       </div>
@@ -191,7 +191,7 @@ body.dark-theme .custom-logo {
           <div class="step-desc"><?= t('host_graphs_subtitle') ?></div>
         </div>
         <div class="step-status">
-          <span class="status-tag status-optional" id="st-hostgraphs"><?= t('label_optional','Optional') ?></span>
+          <span class="status-tag status-optional" id="st-hostgraphs"><?= t('status_optional') ?></span>
           <span class="step-chevron">&#9660;</span>
         </div>
       </div>
@@ -214,7 +214,7 @@ body.dark-theme .custom-logo {
           <div class="step-desc"><?= t('export_time_range_note') ?></div>
         </div>
         <div class="step-status">
-          <span class="status-tag status-empty" id="st-time">Not set</span>
+          <span class="status-tag status-empty" id="st-time"><?= t('status_not_set') ?></span>
           <span class="step-chevron">&#9660;</span>
         </div>
       </div>
@@ -997,7 +997,7 @@ body.dark-theme .custom-logo {
         var ps  = document.getElementById('ps-3');
         var pc  = document.getElementById('pc-3');
         if (newVal && sec)  { sec.classList.add('is-filled'); }
-        if (newVal && st)   { st.textContent = 'Selected'; st.className = 'status-tag status-filled'; }
+        if (newVal && st)   { st.textContent = ST.selected; st.className = 'status-tag status-filled'; }
         if (newVal && ps)   { ps.className = 'progress-step done'; }
         if (newVal && pc)   { pc.style.background = 'var(--green)'; }
         if (typeof updateProgress === 'function') updateProgress();
@@ -1204,6 +1204,15 @@ body.dark-theme .custom-logo {
     return (el.value || el.getAttribute('value') || el.defaultValue || '').trim();
   }
 
+  // Textos de estado de cada paso, traducidos (antes estaban fijos en ingles)
+  var ST = {
+    selected:     T.status_selected     || 'Selected',
+    not_selected: T.status_not_selected || 'Not selected',
+    optional:     T.status_optional     || 'Optional',
+    defined:      T.status_defined      || 'Defined',
+    not_set:      T.status_not_set      || 'Not set'
+  };
+
   function updateProgress() {
     var hasGraphs    = v('host-graph-ids-hidden');
     var hasHosts     = v('hostids-hidden-input') || v('hostnames-textarea') || v('hostgroupids-hidden-input') || v('host-item-ids-hidden') || hasGraphs;
@@ -1211,18 +1220,18 @@ body.dark-theme .custom-logo {
     var hasItems     = v('itemkeys-hidden-input') || v('lldids-hidden-input') || hasHostItems;
     var hasTime      = v('from_dt') && v('to_dt');
 
-    setStepState('ps-1','pc-1','st-hosts',    'step-hosts',    hasHosts,     'Selected','Not selected');
-    setStepState('ps-2','pc-2','st-items',    'step-items',    hasItems,     'Selected','Not selected');
-    setStepState('ps-3','pc-3','st-hostitems','step-hostitems',hasHostItems || hasGraphs, 'Selected','Optional');
+    setStepState('ps-1','pc-1','st-hosts',    'step-hosts',    hasHosts,     ST.selected, ST.not_selected);
+    setStepState('ps-2','pc-2','st-items',    'step-items',    hasItems,     ST.selected, ST.not_selected);
+    setStepState('ps-3','pc-3','st-hostitems','step-hostitems',hasHostItems || hasGraphs, ST.selected, ST.optional);
     // La seccion de graficos predefinidos comparte el paso 3 de la barra de progreso
     var stG = document.getElementById('st-hostgraphs'), secG = document.getElementById('step-hostgraphs');
-    if (stG)  { stG.textContent = hasGraphs ? 'Selected' : 'Optional'; stG.className = 'status-tag ' + (hasGraphs ? 'status-filled' : 'status-empty'); }
+    if (stG)  { stG.textContent = hasGraphs ? ST.selected : ST.optional; stG.className = 'status-tag ' + (hasGraphs ? 'status-filled' : 'status-empty'); }
     if (secG) { secG.classList.toggle('is-filled', !!hasGraphs); }
     var stHI = document.getElementById('st-hostitems');
-    if (stHI && !hasHostItems) { stHI.textContent = 'Optional'; stHI.className = 'status-tag status-empty'; }
+    if (stHI && !hasHostItems) { stHI.textContent = ST.optional; stHI.className = 'status-tag status-empty'; }
     var secHI = document.getElementById('step-hostitems');
     if (secHI) { secHI.classList.toggle('is-filled', !!hasHostItems); }
-    setStepState('ps-4','pc-4','st-time',     'step-time',     hasTime,      'Defined', 'Not set');
+    setStepState('ps-4','pc-4','st-time',     'step-time',     hasTime,      ST.defined, ST.not_set);
 
     var p5 = document.getElementById('ps-5');
     if (p5) p5.className = 'progress-step active';

@@ -411,4 +411,11 @@ Do you want to continue?',
     'month_oct' => 'October',
     'month_nov' => 'November',
     'month_dec' => 'December',
+    // Estado de cada paso del asistente
+    'status_selected' => 'Selected',
+    'status_not_selected' => 'Not selected',
+    'status_optional' => 'Optional',
+    'status_defined' => 'Defined',
+    'status_not_set' => 'Not set',
+    'status_export_step' => 'Export',
 ];
