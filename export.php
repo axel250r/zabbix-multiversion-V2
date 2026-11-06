@@ -281,7 +281,7 @@ body.dark-theme .custom-logo {
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="select-hosts"><?= t('modal_select_button') ?></button>
-      <button type="button" class="btn" id="cancel-host-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+      <button type="button" class="btn btn-cancel" id="cancel-host-selection"><?= t('modal_cancel_button') ?></button>
     </div>
   </div>
 </div>
@@ -300,7 +300,7 @@ body.dark-theme .custom-logo {
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="select-hostgroups"><?= t('modal_select_button') ?></button>
-      <button type="button" class="btn" id="cancel-hostgroup-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+      <button type="button" class="btn btn-cancel" id="cancel-hostgroup-selection"><?= t('modal_cancel_button') ?></button>
     </div>
   </div>
 </div>
@@ -380,7 +380,7 @@ body.dark-theme .custom-logo {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="next-to-items"><?= t('modal_next_button') ?></button>
-        <button type="button" class="btn" id="cancel-template-selection" class="btn btn-cancel"><?= t('modal_cancel_button') ?></button>
+        <button type="button" class="btn btn-cancel" id="cancel-template-selection"><?= t('modal_cancel_button') ?></button>
       </div>
     </div>
     <div id="modal-step-2" style="display:none;">
